@@ -72,7 +72,13 @@ export default function QuizRoutes(app) {
 
       // Check if user has access to the course (via enrollment)
       const enrolledUsers = await enrollmentDao.findUsersForCourse(quiz.courseId);
-      const isEnrolled = enrolledUsers.some(u => u._id === currentUser._id);
+      // Handle both old format IDs (simple strings like "678") and new format (UUIDs)
+      // Also handle null/undefined users from populate
+      const isEnrolled = enrolledUsers && Array.isArray(enrolledUsers) && enrolledUsers.some(u => {
+        if (!u || !u._id) return false;
+        // Convert both IDs to strings for comparison (handles "678" vs UUID format)
+        return String(u._id) === String(currentUser._id);
+      });
 
       if (!isEnrolled) {
         res.status(403).json({ message: "Access denied" });
@@ -86,7 +92,8 @@ export default function QuizRoutes(app) {
 
       res.json(quiz);
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      console.error("Error in findQuizById:", err);
+      res.status(500).json({ message: err.message || "Internal server error" });
     }
   };
 
@@ -103,7 +110,13 @@ export default function QuizRoutes(app) {
 
       // Check if user is enrolled in the course (faculty who created it will be enrolled)
       const enrolledUsers = await enrollmentDao.findUsersForCourse(courseId);
-      const isEnrolled = enrolledUsers.some(u => u._id === currentUser._id);
+      // Handle both old format IDs (simple strings like "678") and new format (UUIDs)
+      // Also handle null/undefined users from populate
+      const isEnrolled = enrolledUsers && Array.isArray(enrolledUsers) && enrolledUsers.some(u => {
+        if (!u || !u._id) return false;
+        // Convert both IDs to strings for comparison (handles "678" vs UUID format)
+        return String(u._id) === String(currentUser._id);
+      });
       
       if (!isEnrolled || currentUser.role !== "FACULTY") {
         res.status(403).json({ message: "Access denied" });
@@ -157,7 +170,13 @@ export default function QuizRoutes(app) {
 
       // Check if user is enrolled in the course (faculty who created it will be enrolled)
       const enrolledUsers = await enrollmentDao.findUsersForCourse(quiz.courseId);
-      const isEnrolled = enrolledUsers.some(u => u._id === currentUser._id);
+      // Handle both old format IDs (simple strings like "678") and new format (UUIDs)
+      // Also handle null/undefined users from populate
+      const isEnrolled = enrolledUsers && Array.isArray(enrolledUsers) && enrolledUsers.some(u => {
+        if (!u || !u._id) return false;
+        // Convert both IDs to strings for comparison (handles "678" vs UUID format)
+        return String(u._id) === String(currentUser._id);
+      });
       
       if (!isEnrolled || currentUser.role !== "FACULTY") {
         res.status(403).json({ message: "Access denied" });
@@ -190,7 +209,13 @@ export default function QuizRoutes(app) {
 
       // Check if user is enrolled in the course (faculty who created it will be enrolled)
       const enrolledUsers = await enrollmentDao.findUsersForCourse(quiz.courseId);
-      const isEnrolled = enrolledUsers.some(u => u._id === currentUser._id);
+      // Handle both old format IDs (simple strings like "678") and new format (UUIDs)
+      // Also handle null/undefined users from populate
+      const isEnrolled = enrolledUsers && Array.isArray(enrolledUsers) && enrolledUsers.some(u => {
+        if (!u || !u._id) return false;
+        // Convert both IDs to strings for comparison (handles "678" vs UUID format)
+        return String(u._id) === String(currentUser._id);
+      });
       
       if (!isEnrolled || currentUser.role !== "FACULTY") {
         res.status(403).json({ message: "Access denied" });
@@ -227,7 +252,13 @@ export default function QuizRoutes(app) {
 
       // Check if user is enrolled in the course (faculty who created it will be enrolled)
       const enrolledUsers = await enrollmentDao.findUsersForCourse(quiz.courseId);
-      const isEnrolled = enrolledUsers.some(u => u._id === currentUser._id);
+      // Handle both old format IDs (simple strings like "678") and new format (UUIDs)
+      // Also handle null/undefined users from populate
+      const isEnrolled = enrolledUsers && Array.isArray(enrolledUsers) && enrolledUsers.some(u => {
+        if (!u || !u._id) return false;
+        // Convert both IDs to strings for comparison (handles "678" vs UUID format)
+        return String(u._id) === String(currentUser._id);
+      });
       
       if (!isEnrolled || currentUser.role !== "FACULTY") {
         res.status(403).json({ message: "Access denied" });
@@ -260,7 +291,13 @@ export default function QuizRoutes(app) {
 
       // Check if user has access to the course (via enrollment)
       const enrolledUsers = await enrollmentDao.findUsersForCourse(quiz.courseId);
-      const isEnrolled = enrolledUsers.some(u => u._id === currentUser._id);
+      // Handle both old format IDs (simple strings like "678") and new format (UUIDs)
+      // Also handle null/undefined users from populate
+      const isEnrolled = enrolledUsers && Array.isArray(enrolledUsers) && enrolledUsers.some(u => {
+        if (!u || !u._id) return false;
+        // Convert both IDs to strings for comparison (handles "678" vs UUID format)
+        return String(u._id) === String(currentUser._id);
+      });
 
       if (!isEnrolled) {
         res.status(403).json({ message: "Access denied" });
@@ -293,7 +330,13 @@ export default function QuizRoutes(app) {
 
       // Check if user is enrolled in the course (faculty who created it will be enrolled)
       const enrolledUsers = await enrollmentDao.findUsersForCourse(quiz.courseId);
-      const isEnrolled = enrolledUsers.some(u => u._id === currentUser._id);
+      // Handle both old format IDs (simple strings like "678") and new format (UUIDs)
+      // Also handle null/undefined users from populate
+      const isEnrolled = enrolledUsers && Array.isArray(enrolledUsers) && enrolledUsers.some(u => {
+        if (!u || !u._id) return false;
+        // Convert both IDs to strings for comparison (handles "678" vs UUID format)
+        return String(u._id) === String(currentUser._id);
+      });
       
       if (!isEnrolled || currentUser.role !== "FACULTY") {
         res.status(403).json({ message: "Access denied" });
@@ -381,7 +424,13 @@ export default function QuizRoutes(app) {
 
       // Check if user is enrolled in the course (faculty who created it will be enrolled)
       const enrolledUsers = await enrollmentDao.findUsersForCourse(quiz.courseId);
-      const isEnrolled = enrolledUsers.some(u => u._id === currentUser._id);
+      // Handle both old format IDs (simple strings like "678") and new format (UUIDs)
+      // Also handle null/undefined users from populate
+      const isEnrolled = enrolledUsers && Array.isArray(enrolledUsers) && enrolledUsers.some(u => {
+        if (!u || !u._id) return false;
+        // Convert both IDs to strings for comparison (handles "678" vs UUID format)
+        return String(u._id) === String(currentUser._id);
+      });
       
       if (!isEnrolled || currentUser.role !== "FACULTY") {
         res.status(403).json({ message: "Access denied" });
@@ -422,6 +471,23 @@ export default function QuizRoutes(app) {
       if (!quiz.published) {
         res.status(403).json({ message: "Quiz not available" });
         return;
+      }
+
+      // Check if quiz is available (check dueDate to block access, not availableUntilDate)
+      const now = new Date();
+      if (quiz.availableDate) {
+        const availableDate = new Date(quiz.availableDate);
+        if (now < availableDate) {
+          res.status(403).json({ message: "Quiz is not yet available" });
+          return;
+        }
+      }
+      if (quiz.dueDate) {
+        const dueDate = new Date(quiz.dueDate);
+        if (now > dueDate) {
+          res.status(403).json({ message: "Quiz is no longer available. The due date has passed." });
+          return;
+        }
       }
 
       // Check access code
@@ -497,17 +563,36 @@ export default function QuizRoutes(app) {
           }
         } else if (question.type === "fill-blank") {
           // Handle fill-in-the-blank questions
+          // Answers must match exactly (case-sensitive), but whitespace is trimmed
           const correctAnswers = question.correctAnswers || [];
           if (correctAnswers.length === 0) {
             correct = false;
             correctAnswer = "No correct answers defined";
           } else {
-            const studentAnswerStr = String(studentAnswer || "").toLowerCase().trim();
-            // Check if student answer matches any of the correct answers (case-insensitive, trimmed)
-            correct = correctAnswers.some(ca => {
-              const correctAnswerStr = String(ca || "").toLowerCase().trim();
-              return correctAnswerStr === studentAnswerStr;
-            });
+            // Handle both old format (single string) and new format (object with numbered keys)
+            let studentAnswerStr = "";
+            if (typeof studentAnswer === "object" && studentAnswer !== null && !Array.isArray(studentAnswer)) {
+              // New format: object with numbered keys like {1: "answer1", 2: "answer2"}
+              // All blanks must be correct for full points
+              // Case-sensitive comparison: only trim whitespace, preserve case
+              const blankAnswers = Object.values(studentAnswer).map(v => String(v || "").trim());
+              const allCorrect = blankAnswers.length > 0 && blankAnswers.every(sa => {
+                return correctAnswers.some(ca => {
+                  const correctAnswerStr = String(ca || "").trim();
+                  return correctAnswerStr === sa;
+                });
+              });
+              correct = allCorrect;
+              studentAnswerStr = blankAnswers.join(", ");
+            } else {
+              // Old format: single string answer
+              // Case-sensitive comparison: only trim whitespace, preserve case
+              studentAnswerStr = String(studentAnswer || "").trim();
+              correct = correctAnswers.some(ca => {
+                const correctAnswerStr = String(ca || "").trim();
+                return correctAnswerStr === studentAnswerStr;
+              });
+            }
             correctAnswer = correctAnswers; // Return all correct answers for display
             if (correct) {
               score += question.points;
@@ -602,17 +687,34 @@ export default function QuizRoutes(app) {
             correct = studentAnswerBool === question.correctAnswer;
           } else if (question.type === "fill-blank") {
             // Handle fill-in-the-blank questions
+            // Answers must match exactly (case-sensitive), but whitespace is trimmed
             const correctAnswers = question.correctAnswers || [];
             if (correctAnswers.length === 0) {
               correct = false;
               correctAnswer = "No correct answers defined";
             } else {
-              const studentAnswerStr = String(studentAnswer || "").toLowerCase().trim();
-              // Check if student answer matches any of the correct answers (case-insensitive, trimmed)
-              correct = correctAnswers.some(ca => {
-                const correctAnswerStr = String(ca || "").toLowerCase().trim();
-                return correctAnswerStr === studentAnswerStr;
-              });
+              // Handle both old format (single string) and new format (object with numbered keys)
+              if (typeof studentAnswer === "object" && studentAnswer !== null && !Array.isArray(studentAnswer)) {
+                // New format: object with numbered keys like {1: "answer1", 2: "answer2"}
+                // All blanks must be correct for full points
+                // Case-sensitive comparison: only trim whitespace, preserve case
+                const blankAnswers = Object.values(studentAnswer).map(v => String(v || "").trim());
+                const allCorrect = blankAnswers.length > 0 && blankAnswers.every(sa => {
+                  return correctAnswers.some(ca => {
+                    const correctAnswerStr = String(ca || "").trim();
+                    return correctAnswerStr === sa;
+                  });
+                });
+                correct = allCorrect;
+              } else {
+                // Old format: single string answer
+                // Case-sensitive comparison: only trim whitespace, preserve case
+                const studentAnswerStr = String(studentAnswer || "").trim();
+                correct = correctAnswers.some(ca => {
+                  const correctAnswerStr = String(ca || "").trim();
+                  return correctAnswerStr === studentAnswerStr;
+                });
+              }
               correctAnswer = correctAnswers; // Return all correct answers for display
             }
           }
