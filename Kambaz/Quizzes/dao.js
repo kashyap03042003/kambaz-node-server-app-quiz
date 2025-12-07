@@ -10,7 +10,7 @@ export function findQuizById(quizId) {
 }
 
 export function createQuiz(quiz) {
-  delete quiz._id; // MongoDB will generate _id
+  delete quiz._id;
   const newQuiz = { ...quiz, _id: uuidv4(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
   return model.create(newQuiz);
 }

@@ -10,7 +10,7 @@ export function findQuestionById(questionId) {
 }
 
 export function createQuestion(question) {
-  delete question._id; // MongoDB will generate _id
+  delete question._id;
   const newQuestion = { ...question, _id: uuidv4() };
   return model.create(newQuestion);
 }

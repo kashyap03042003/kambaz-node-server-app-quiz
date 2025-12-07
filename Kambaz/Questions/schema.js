@@ -11,13 +11,10 @@ const questionSchema = new mongoose.Schema({
   title: String,
   points: { type: Number, default: 1 },
   question: String,
-  // For multiple-choice
   choices: [String],
-  correctChoiceIndex: Number, // For backward compatibility (single answer)
-  correctChoiceIndices: [Number], // For multiple correct answers
-  // For true-false
+  correctChoiceIndex: Number,
+  correctChoiceIndices: [Number],
   correctAnswer: Boolean,
-  // For fill-blank
   correctAnswers: [String],
 }, { collection: "questions" });
 

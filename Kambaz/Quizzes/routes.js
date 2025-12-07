@@ -5,7 +5,6 @@ import * as courseDao from "../Courses/dao.js";
 import * as enrollmentDao from "../Enrollments/dao.js";
 
 export default function QuizRoutes(app) {
-  // Get quizzes for a course
   const findQuizzesForCourse = async (req, res) => {
     try {
       const { courseId } = req.params;
@@ -17,16 +16,12 @@ export default function QuizRoutes(app) {
       }
 
       const quizzes = await dao.findQuizzesForCourse(courseId);
-      // Get all questions and attempts (we'll filter by quizId in memory)
-      // Note: This is inefficient but matches the original pattern
 
-      // For students, only show published quizzes
       let courseQuizzes = quizzes;
       if (currentUser.role === "STUDENT") {
         courseQuizzes = quizzes.filter(q => q.published);
       }
 
-      // Add question count and score for students
       const quizzesWithDetails = await Promise.all(courseQuizzes.map(async (quiz) => {
         const quizQuestions = await questionDao.findQuestionsForQuiz(quiz._id);
         const quizData = {
@@ -53,7 +48,6 @@ export default function QuizRoutes(app) {
     }
   };
 
-  // Get quiz by ID
   const findQuizById = async (req, res) => {
     try {
       const { quizId } = req.params;
@@ -97,7 +91,6 @@ export default function QuizRoutes(app) {
     }
   };
 
-  // Create quiz (faculty only)
   const createQuiz = async (req, res) => {
     try {
       const { courseId } = req.params;
@@ -108,13 +101,9 @@ export default function QuizRoutes(app) {
         return;
       }
 
-      // Check if user is enrolled in the course (faculty who created it will be enrolled)
       const enrolledUsers = await enrollmentDao.findUsersForCourse(courseId);
-      // Handle both old format IDs (simple strings like "678") and new format (UUIDs)
-      // Also handle null/undefined users from populate
       const isEnrolled = enrolledUsers && Array.isArray(enrolledUsers) && enrolledUsers.some(u => {
         if (!u || !u._id) return false;
-        // Convert both IDs to strings for comparison (handles "678" vs UUID format)
         return String(u._id) === String(currentUser._id);
       });
       
@@ -151,7 +140,6 @@ export default function QuizRoutes(app) {
     }
   };
 
-  // Update quiz (faculty only)
   const updateQuiz = async (req, res) => {
     try {
       const { quizId } = req.params;
@@ -190,7 +178,6 @@ export default function QuizRoutes(app) {
     }
   };
 
-  // Delete quiz (faculty only)
   const deleteQuiz = async (req, res) => {
     try {
       const { quizId } = req.params;
@@ -207,13 +194,9 @@ export default function QuizRoutes(app) {
         return;
       }
 
-      // Check if user is enrolled in the course (faculty who created it will be enrolled)
       const enrolledUsers = await enrollmentDao.findUsersForCourse(quiz.courseId);
-      // Handle both old format IDs (simple strings like "678") and new format (UUIDs)
-      // Also handle null/undefined users from populate
       const isEnrolled = enrolledUsers && Array.isArray(enrolledUsers) && enrolledUsers.some(u => {
         if (!u || !u._id) return false;
-        // Convert both IDs to strings for comparison (handles "678" vs UUID format)
         return String(u._id) === String(currentUser._id);
       });
       
@@ -223,7 +206,6 @@ export default function QuizRoutes(app) {
       }
 
       await dao.deleteQuiz(quizId);
-      // Delete all questions for this quiz
       await questionDao.deleteQuestionsForQuiz(quizId);
 
       res.json({ message: "Quiz deleted" });
@@ -232,7 +214,6 @@ export default function QuizRoutes(app) {
     }
   };
 
-  // Publish/Unpublish quiz (faculty only)
   const publishQuiz = async (req, res) => {
     try {
       const { quizId } = req.params;
@@ -272,7 +253,6 @@ export default function QuizRoutes(app) {
     }
   };
 
-  // Get questions for a quiz
   const findQuestionsForQuiz = async (req, res) => {
     try {
       const { quizId } = req.params;
@@ -311,7 +291,6 @@ export default function QuizRoutes(app) {
     }
   };
 
-  // Add/Update question (faculty only)
   const createOrUpdateQuestion = async (req, res) => {
     try {
       const { quizId } = req.params;
@@ -328,13 +307,9 @@ export default function QuizRoutes(app) {
         return;
       }
 
-      // Check if user is enrolled in the course (faculty who created it will be enrolled)
       const enrolledUsers = await enrollmentDao.findUsersForCourse(quiz.courseId);
-      // Handle both old format IDs (simple strings like "678") and new format (UUIDs)
-      // Also handle null/undefined users from populate
       const isEnrolled = enrolledUsers && Array.isArray(enrolledUsers) && enrolledUsers.some(u => {
         if (!u || !u._id) return false;
-        // Convert both IDs to strings for comparison (handles "678" vs UUID format)
         return String(u._id) === String(currentUser._id);
       });
       
@@ -347,10 +322,8 @@ export default function QuizRoutes(app) {
       let newQuestion;
 
       if (questionData._id && questionData._id.trim() !== "") {
-        // Update existing question
         newQuestion = await questionDao.updateQuestion(questionData._id, questionData);
       } else {
-        // Create new question
         if (questionData.type === "multiple-choice") {
           const mcqData = {
             quizId,
@@ -360,11 +333,9 @@ export default function QuizRoutes(app) {
             question: questionData.question || "",
             choices: questionData.choices || ["", ""],
           };
-          // Support both single and multiple correct answers
           if (questionData.correctChoiceIndices && questionData.correctChoiceIndices.length > 0) {
             mcqData.correctChoiceIndices = questionData.correctChoiceIndices;
           } else if (questionData.correctChoiceIndex !== undefined) {
-            // Backward compatibility: convert single to array
             mcqData.correctChoiceIndices = [questionData.correctChoiceIndex];
           } else {
             mcqData.correctChoiceIndices = [0];
@@ -394,7 +365,6 @@ export default function QuizRoutes(app) {
         }
       }
 
-      // Update quiz points
       const questions = await questionDao.findQuestionsForQuiz(quizId);
       const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
       await dao.updateQuiz(quizId, { points: totalPoints });
@@ -405,7 +375,6 @@ export default function QuizRoutes(app) {
     }
   };
 
-  // Delete question (faculty only)
   const deleteQuestion = async (req, res) => {
     try {
       const { quizId, questionId } = req.params;
@@ -422,13 +391,9 @@ export default function QuizRoutes(app) {
         return;
       }
 
-      // Check if user is enrolled in the course (faculty who created it will be enrolled)
       const enrolledUsers = await enrollmentDao.findUsersForCourse(quiz.courseId);
-      // Handle both old format IDs (simple strings like "678") and new format (UUIDs)
-      // Also handle null/undefined users from populate
       const isEnrolled = enrolledUsers && Array.isArray(enrolledUsers) && enrolledUsers.some(u => {
         if (!u || !u._id) return false;
-        // Convert both IDs to strings for comparison (handles "678" vs UUID format)
         return String(u._id) === String(currentUser._id);
       });
       
@@ -439,7 +404,6 @@ export default function QuizRoutes(app) {
 
       await questionDao.deleteQuestion(questionId);
 
-      // Update quiz points
       const questions = await questionDao.findQuestionsForQuiz(quizId);
       const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
       await dao.updateQuiz(quizId, { points: totalPoints });
@@ -450,7 +414,6 @@ export default function QuizRoutes(app) {
     }
   };
 
-  // Submit quiz attempt (student only)
   const submitQuizAttempt = async (req, res) => {
     try {
       const { quizId } = req.params;
@@ -473,7 +436,6 @@ export default function QuizRoutes(app) {
         return;
       }
 
-      // Check if quiz is available (check dueDate to block access, not availableUntilDate)
       const now = new Date();
       if (quiz.availableDate) {
         const availableDate = new Date(quiz.availableDate);
@@ -490,13 +452,11 @@ export default function QuizRoutes(app) {
         }
       }
 
-      // Check access code
       if (quiz.accessCode && quiz.accessCode !== accessCode) {
         res.status(403).json({ message: "Invalid access code" });
         return;
       }
 
-      // Check attempts
       const studentAttempts = await attemptDao.findAttemptsForStudent(quizId, currentUser._id);
       
       if (quiz.multipleAttempts) {
@@ -511,12 +471,10 @@ export default function QuizRoutes(app) {
         }
       }
 
-      // Grade the quiz
       const questions = await questionDao.findQuestionsForQuiz(quizId);
       let score = 0;
       const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
 
-      // Create gradedAnswers object for detailed feedback
       const gradedAnswers = {};
 
       questions.forEach((question) => {
@@ -525,12 +483,10 @@ export default function QuizRoutes(app) {
         let correctAnswer = null;
 
         if (question.type === "multiple-choice") {
-          // Support both single and multiple correct answers
           const correctIndices = question.correctChoiceIndices && question.correctChoiceIndices.length > 0
             ? question.correctChoiceIndices
             : (question.correctChoiceIndex !== undefined ? [question.correctChoiceIndex] : []);
           
-          // Handle both single answer (number) and multiple answers (array)
           let studentAnswers = [];
           if (Array.isArray(studentAnswer)) {
             studentAnswers = studentAnswer.map(a => typeof a === "string" ? parseInt(a, 10) : Number(a)).filter(a => !isNaN(a));
@@ -541,7 +497,6 @@ export default function QuizRoutes(app) {
             }
           }
           
-          // Check if all selected answers are correct and all correct answers are selected
           const correctSet = new Set(correctIndices);
           const studentSet = new Set(studentAnswers);
           correct = studentAnswers.length === correctIndices.length &&
@@ -562,19 +517,13 @@ export default function QuizRoutes(app) {
             score += question.points;
           }
         } else if (question.type === "fill-blank") {
-          // Handle fill-in-the-blank questions
-          // Answers must match exactly (case-sensitive), but whitespace is trimmed
           const correctAnswers = question.correctAnswers || [];
           if (correctAnswers.length === 0) {
             correct = false;
             correctAnswer = "No correct answers defined";
           } else {
-            // Handle both old format (single string) and new format (object with numbered keys)
             let studentAnswerStr = "";
             if (typeof studentAnswer === "object" && studentAnswer !== null && !Array.isArray(studentAnswer)) {
-              // New format: object with numbered keys like {1: "answer1", 2: "answer2"}
-              // All blanks must be correct for full points
-              // Case-sensitive comparison: only trim whitespace, preserve case
               const blankAnswers = Object.values(studentAnswer).map(v => String(v || "").trim());
               const allCorrect = blankAnswers.length > 0 && blankAnswers.every(sa => {
                 return correctAnswers.some(ca => {
@@ -585,15 +534,13 @@ export default function QuizRoutes(app) {
               correct = allCorrect;
               studentAnswerStr = blankAnswers.join(", ");
             } else {
-              // Old format: single string answer
-              // Case-sensitive comparison: only trim whitespace, preserve case
               studentAnswerStr = String(studentAnswer || "").trim();
               correct = correctAnswers.some(ca => {
                 const correctAnswerStr = String(ca || "").trim();
                 return correctAnswerStr === studentAnswerStr;
               });
             }
-            correctAnswer = correctAnswers; // Return all correct answers for display
+            correctAnswer = correctAnswers;
             if (correct) {
               score += question.points;
             }
@@ -616,7 +563,6 @@ export default function QuizRoutes(app) {
         attemptNumber: studentAttempts.length + 1,
       });
 
-      // Return attempt with gradedAnswers for immediate feedback
       res.json({
         ...newAttempt.toObject(),
         gradedAnswers,
@@ -626,7 +572,6 @@ export default function QuizRoutes(app) {
     }
   };
 
-  // Get quiz attempts
   const findQuizAttempts = async (req, res) => {
     try {
       const { quizId } = req.params;
@@ -644,7 +589,6 @@ export default function QuizRoutes(app) {
         attempts = await attemptDao.findAttemptsForQuiz(quizId);
       }
 
-      // Add question details for grading
       const questions = await questionDao.findQuestionsForQuiz(quizId);
       const attemptsWithDetails = attempts.map((attempt) => {
         const gradedAnswers = {};
@@ -655,12 +599,10 @@ export default function QuizRoutes(app) {
           let correctAnswer = null;
 
           if (question.type === "multiple-choice") {
-            // Support both single and multiple correct answers
             const correctIndices = question.correctChoiceIndices && question.correctChoiceIndices.length > 0
               ? question.correctChoiceIndices
               : (question.correctChoiceIndex !== undefined ? [question.correctChoiceIndex] : []);
             
-            // Handle both single answer (number) and multiple answers (array)
             let studentAnswers = [];
             if (Array.isArray(studentAnswer)) {
               studentAnswers = studentAnswer.map(a => typeof a === "string" ? parseInt(a, 10) : Number(a)).filter(a => !isNaN(a));
@@ -671,7 +613,6 @@ export default function QuizRoutes(app) {
               }
             }
             
-            // Check if all selected answers are correct and all correct answers are selected
             const correctSet = new Set(correctIndices);
             const studentSet = new Set(studentAnswers);
             correct = studentAnswers.length === correctIndices.length &&
@@ -686,18 +627,12 @@ export default function QuizRoutes(app) {
               : Boolean(studentAnswer);
             correct = studentAnswerBool === question.correctAnswer;
           } else if (question.type === "fill-blank") {
-            // Handle fill-in-the-blank questions
-            // Answers must match exactly (case-sensitive), but whitespace is trimmed
             const correctAnswers = question.correctAnswers || [];
             if (correctAnswers.length === 0) {
               correct = false;
               correctAnswer = "No correct answers defined";
             } else {
-              // Handle both old format (single string) and new format (object with numbered keys)
               if (typeof studentAnswer === "object" && studentAnswer !== null && !Array.isArray(studentAnswer)) {
-                // New format: object with numbered keys like {1: "answer1", 2: "answer2"}
-                // All blanks must be correct for full points
-                // Case-sensitive comparison: only trim whitespace, preserve case
                 const blankAnswers = Object.values(studentAnswer).map(v => String(v || "").trim());
                 const allCorrect = blankAnswers.length > 0 && blankAnswers.every(sa => {
                   return correctAnswers.some(ca => {
@@ -707,15 +642,13 @@ export default function QuizRoutes(app) {
                 });
                 correct = allCorrect;
               } else {
-                // Old format: single string answer
-                // Case-sensitive comparison: only trim whitespace, preserve case
                 const studentAnswerStr = String(studentAnswer || "").trim();
                 correct = correctAnswers.some(ca => {
                   const correctAnswerStr = String(ca || "").trim();
                   return correctAnswerStr === studentAnswerStr;
                 });
               }
-              correctAnswer = correctAnswers; // Return all correct answers for display
+              correctAnswer = correctAnswers;
             }
           }
 
@@ -738,7 +671,6 @@ export default function QuizRoutes(app) {
     }
   };
 
-  // Routes
   app.get("/api/quizzes/course/:courseId", findQuizzesForCourse);
   app.get("/api/quizzes/:quizId", findQuizById);
   app.post("/api/quizzes/course/:courseId", createQuiz);

@@ -10,7 +10,7 @@ export function findAttemptsForStudent(quizId, studentId) {
 }
 
 export function createAttempt(attempt) {
-  delete attempt._id; // MongoDB will generate _id
+  delete attempt._id;
   const newAttempt = { ...attempt, _id: uuidv4(), submittedAt: new Date().toISOString() };
   return model.create(newAttempt);
 }
