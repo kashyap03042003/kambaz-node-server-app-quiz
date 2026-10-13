@@ -16,6 +16,71 @@ The REST API for **Kambaz**, a Canvas-style learning management system. It's bui
 
 Node.js · Express 5 · MongoDB Atlas · Mongoose · express-session · cors · morgan
 
+## High-level architecture
+
+```mermaid
+flowchart LR
+    B["Browser"] -->|HTTPS| FE["Next.js frontend<br/>(Vercel)"]
+    FE -->|"REST + JSON<br/>axios, withCredentials"| API["Express API<br/>(Render)"]
+    API -->|Mongoose| DB[("MongoDB Atlas")]
+    API -. "session cookie<br/>(connect.sid)" .-> FE
+```
+
+The system has three tiers:
+
+1. **Frontend** ([kambaz-next-js-quiz](https://github.com/kashyap03042003/kambaz-next-js-quiz)). A Next.js app on Vercel that renders the UI and keeps client state in Redux. It calls this API over HTTPS.
+2. **API (this repo).** A stateless Express server on Render that handles authentication, authorization data and all CRUD operations.
+3. **Database.** MongoDB Atlas holds one collection per feature.
+
+### Request pipeline
+
+Every request goes through the same middleware chain in [index.js](index.js) before it reaches a feature's routes:
+
+```mermaid
+flowchart LR
+    R["Request"] --> M["morgan<br/>logging"] --> C["cors<br/>origin allow-list"] --> J["express.json<br/>body parser"] --> S["express-session<br/>req.session.currentUser"] --> RT["Feature routes"]
+    RT --> D["DAO"] --> MO["Mongoose model"] --> DB[("MongoDB")]
+```
+
+| Layer | File | Job |
+|---|---|---|
+| Routes | `routes.js` | HTTP handling: reads params, body and session, and sends the JSON response or a 500 error |
+| DAO | `dao.js` | Data access functions such as `findCoursesForUser` and `createQuiz` |
+| Model | `model.js` | Mongoose model bound to a collection |
+| Schema | `schema.js` | Document shape, enums and `ref`s |
+
+### Authentication and sessions
+
+- `POST /api/users/signin` checks the username and password, then stores the user in `req.session.currentUser`.
+- The browser holds a session cookie. In production it's `secure`, `sameSite=none` and `httpOnly`, because the frontend and API are on different domains. That's also why CORS uses `credentials: true` and an exact origin allow-list.
+- Later requests such as `/api/users/profile` read the current user from the session. Sessions are kept in memory (MemoryStore), so they're lost whenever the server restarts.
+- The API checks roles in only a few places. An `ADMIN` gets every course from `/api/users/:uid/courses`, and a `STUDENT` sees only published quizzes. Edit permissions (faculty can edit, students can only view) are enforced in the frontend only.
+
+### Data model
+
+```mermaid
+erDiagram
+    USER ||--o{ ENROLLMENT : has
+    COURSE ||--o{ ENROLLMENT : has
+    COURSE ||--o{ MODULE : contains
+    COURSE ||--o{ ASSIGNMENT : contains
+    COURSE ||--o{ QUIZ : contains
+    QUIZ ||--o{ QUESTION : contains
+    QUIZ ||--o{ QUIZ_ATTEMPT : records
+    USER ||--o{ QUIZ_ATTEMPT : submits
+
+    USER { string _id string username string role }
+    COURSE { string _id string name string number }
+    ENROLLMENT { string _id string user string course string status }
+    MODULE { string _id string course array lessons }
+    ASSIGNMENT { string _id string course number points string dueDate }
+    QUIZ { string _id string courseId number points boolean published }
+    QUESTION { string _id string quizId string type number points }
+    QUIZ_ATTEMPT { string _id string quizId string studentId number score }
+```
+
+All IDs are strings: UUIDs, or readable IDs such as `RS101` in the seed data. Relationships are stored as ID fields, not embedded documents, except for module lessons. An enrollment's ID is `<userId>-<courseId>`.
+
 ## Getting started
 
 ### 1. Install
