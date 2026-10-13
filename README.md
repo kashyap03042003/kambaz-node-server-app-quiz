@@ -69,14 +69,51 @@ erDiagram
     QUIZ ||--o{ QUIZ_ATTEMPT : records
     USER ||--o{ QUIZ_ATTEMPT : submits
 
-    USER { string _id string username string role }
-    COURSE { string _id string name string number }
-    ENROLLMENT { string _id string user string course string status }
-    MODULE { string _id string course array lessons }
-    ASSIGNMENT { string _id string course number points string dueDate }
-    QUIZ { string _id string courseId number points boolean published }
-    QUESTION { string _id string quizId string type number points }
-    QUIZ_ATTEMPT { string _id string quizId string studentId number score }
+    USER {
+        string _id
+        string username
+        string role
+    }
+    COURSE {
+        string _id
+        string name
+        string number
+    }
+    ENROLLMENT {
+        string _id
+        string user
+        string course
+        string status
+    }
+    MODULE {
+        string _id
+        string course
+        array lessons
+    }
+    ASSIGNMENT {
+        string _id
+        string course
+        number points
+        string dueDate
+    }
+    QUIZ {
+        string _id
+        string courseId
+        number points
+        boolean published
+    }
+    QUESTION {
+        string _id
+        string quizId
+        string type
+        number points
+    }
+    QUIZ_ATTEMPT {
+        string _id
+        string quizId
+        string studentId
+        number score
+    }
 ```
 
 All IDs are strings: UUIDs, or readable IDs such as `RS101` in the seed data. Relationships are stored as ID fields, not embedded documents, except for module lessons. An enrollment's ID is `<userId>-<courseId>`.
